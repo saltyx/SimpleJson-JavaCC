@@ -1,12 +1,12 @@
-options{  static = true;}PARSER_BEGIN(SimpleJson)package simplejson.javacc;
+options{  static = false;  jdk_version = "1.8";}PARSER_BEGIN(SimpleJson)package simplejson.javacc;
 
-public class SimpleJson{  public static void main(String args []) throws ParseException  {    while (true)    {      System.out.println("Reading from standard input...");      System.out.print("Enter a simple json :");      try      {        if (SimpleJson.readOneLine() == 0) {  
+public class SimpleJson{  public static void main(String args []) throws ParseException  {    while (true)    {    SimpleJson parse = new SimpleJson(System.in);      System.out.println("Reading from standard input...");      System.out.print("Enter a simple json :");      try      {        if (parse.readOneLine() == 0) {  
         	System.out.println("Ok.");
       	} else {
       	    System.out.println("GoodBye.");
 			return;
-      	}      }      catch (Exception e)      {        System.out.println("NOK.");        System.out.println(e.getMessage());        SimpleJson.ReInit(System.in);      }      catch (Error e)      {        System.out.println("Oops.");        System.out.println(e.getMessage());        break;      }    }  }}PARSER_END(SimpleJson)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN :{  < CONSTANT : (< DIGIT >)+ >| < #DIGIT : [ "0"-"9" ] >
-| < WORD_TOKEN : (["a"-"z"] | ["A"-"Z"]) >}int readOneLine() :{}{  run()
+      	}      }      catch (Exception e)      {        System.out.println("NOK.");        System.out.println(e.getMessage());        parse.ReInit(System.in);      }      catch (Error e)      {        System.out.println("Oops.");        System.out.println(e.getMessage());        break;      }    }  }}PARSER_END(SimpleJson)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN :{  <NUMBER : ("-")? (["0"-"9"] (["0"-"9"])*   		| (["0"-"9"])+ "." (["0"-"9"])* (<EXPONENT>)?  		| "." (["0"-"9"])+ (<EXPONENT>)?  		| (["0"-"9"])+ <EXPONENT> )>  | <#EXPONENT: ["e","E"] (["+","-"])? (["0"-"9"])+ >  
+| < WORD_TOKEN : (["a"-"z"] | ["A"-"Z"]) >| < COMMA : "," >| < LEFT_OBJ : "{" >| < RIGHT_OBJ : "}" >| < LEFT_ARR : "[" >| < RIGHT_ARR :"]" >| < QUOTE : "\"" >| < COLON : ":">| < BOOLEAN : "true" | "false" >| < NULL : "null" >}int readOneLine() :{}{  run()
   {
     return 0;  }
 |
@@ -26,7 +26,7 @@ void run() :
 void obj() :
 {}
 {
-	"{"	members() "}"
+	< LEFT_OBJ > members() < RIGHT_OBJ >
 } 
 
 void members() : 
@@ -42,7 +42,7 @@ void members() :
 void members1() :
 {}
 {
-  "," pair() members1()
+  < COMMA > pair() members1()
 |
   {
 	return;
@@ -52,13 +52,13 @@ void members1() :
 void pair() :
 {}
 {
-  "\""(< WORD_TOKEN >)+"\"" ":" value()
+  < QUOTE > (< WORD_TOKEN >)+ < QUOTE > < COLON > value()
 }
 
 void array() :
 {}
 {
-  "[" elem() "]"
+  < LEFT_ARR > elem() < RIGHT_ARR >
 }
 
 void elem() : 
@@ -74,7 +74,7 @@ void elem() :
 void elem1() :
 {}
 {
-  "," value() elem1()
+  < COMMA > value() elem1()
 |
   {
 	return;
@@ -88,15 +88,13 @@ void value() :
 |
   array()
 |
-  (< CONSTANT >)+
+  < NUMBER >
 |
-  "\""(< WORD_TOKEN >)+"\""
+  < QUOTE > (< WORD_TOKEN >)+ < QUOTE >
 |
-  "true"
+  < BOOLEAN >
 |
-  "false"
-|
-  "null"
+  < NULL >
 }
 
 
