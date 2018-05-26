@@ -1,0 +1,102 @@
+options{  static = true;}PARSER_BEGIN(SimpleJson)package simplejson.javacc;
+
+public class SimpleJson{  public static void main(String args []) throws ParseException  {    while (true)    {      System.out.println("Reading from standard input...");      System.out.print("Enter a simple json :");      try      {        if (SimpleJson.readOneLine() == 0) {  
+        	System.out.println("Ok.");
+      	} else {
+      	    System.out.println("GoodBye.");
+			return;
+      	}      }      catch (Exception e)      {        System.out.println("NOK.");        System.out.println(e.getMessage());        SimpleJson.ReInit(System.in);      }      catch (Error e)      {        System.out.println("Oops.");        System.out.println(e.getMessage());        break;      }    }  }}PARSER_END(SimpleJson)SKIP :{  " "| "\r"| "\t"| "\n"}TOKEN :{  < CONSTANT : (< DIGIT >)+ >| < #DIGIT : [ "0"-"9" ] >
+| < WORD_TOKEN : (["a"-"z"] | ["A"-"Z"]) >}int readOneLine() :{}{  run()
+  {
+    return 0;  }
+|
+  "exit"
+  {	return 1;
+  }}
+
+void run() :
+{}
+{
+  obj()
+|
+  array()
+}
+
+
+void obj() :
+{}
+{
+	"{"	members() "}"
+} 
+
+void members() : 
+{}
+{
+  pair() members1()
+|
+  {
+    return;
+  }
+}
+
+void members1() :
+{}
+{
+  "," pair() members1()
+|
+  {
+	return;
+  }
+}
+
+void pair() :
+{}
+{
+  "\""(< WORD_TOKEN >)+"\"" ":" value()
+}
+
+void array() :
+{}
+{
+  "[" elem() "]"
+}
+
+void elem() : 
+{}
+{
+  value() elem1()
+|
+  {
+    return;
+  }
+}
+
+void elem1() :
+{}
+{
+  "," value() elem1()
+|
+  {
+	return;
+  }
+}
+
+void value() :
+{}
+{
+  obj()
+|
+  array()
+|
+  (< CONSTANT >)+
+|
+  "\""(< WORD_TOKEN >)+"\""
+|
+  "true"
+|
+  "false"
+|
+  "null"
+}
+
+
