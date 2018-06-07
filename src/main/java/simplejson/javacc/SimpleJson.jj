@@ -89,8 +89,8 @@ void value() :
   array()
 |
   < NUMBER >
-|
-  < QUOTE > (< WORD_TOKEN >)+ < QUOTE >
+|  LOOKAHEAD(2)
+  < QUOTE > (< WORD_TOKEN >)+ < QUOTE >|  < QUOTE > < NUMBER > < QUOTE >
 |
   < BOOLEAN >
 |
